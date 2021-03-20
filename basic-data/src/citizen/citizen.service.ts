@@ -7,7 +7,7 @@ import { Citizen } from './entities/citizen.entity';
 
 @Injectable()
 export class CitizenService {
-  
+ 
   
   // CRUD Entity for Citizen Created By Override 
   constructor(@InjectRepository(Citizen) private readonly repo: Repository<Citizen>) 
@@ -24,15 +24,22 @@ export class CitizenService {
   
   // findOne Citizen Created By Override 
    findOne(id: string) :Promise<Citizen> {
-   return this.repo.findOne(id); }
+   return this.repo.findOne(id);
+   }
   
-   
+   getBySSN(ssn: string): Promise<Citizen> {
+     console.log(ssn);
+     
+    return this.repo.findOne({where:{ssn: ssn}})
+  }
+  
   
   // update Citizen Created By Override 
    async update(id: string, req: Citizen) :Promise<Citizen> {
    const existCitizen = await this.repo.findOne(id);
   this.repo.merge(existCitizen,req);
-  return await this.repo.save(existCitizen) ; }
+  return await this.repo.save(existCitizen) ;
+ }
   
    
   
@@ -44,7 +51,16 @@ export class CitizenService {
   
   // save Citizen Created By Override 
    async save(req: Citizen) :Promise<Citizen> {
-   return await this.repo.save(req)  }
+
+    if(req.issueDate && ! req.expireDate){
+      let exp = new Date(req.issueDate)
+      exp.setFullYear(exp.getFullYear() + 7)
+      req.expireDate = exp.getTime()
+    }
+   return await this.repo.save(req) 
+  
+  
+  }
   
    
   

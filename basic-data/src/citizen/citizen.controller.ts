@@ -35,6 +35,11 @@ return this.service.findAll();
 return this.service.findOne(id); 
  } 
   
+ @MessagePattern('Citizen/getBySSN')  
+ getBySSN( ssn: string) :Promise<Citizen> {
+return this.service.getBySSN(ssn); 
+ } 
+  
  
 /* PUT  Citizen End Point */
 

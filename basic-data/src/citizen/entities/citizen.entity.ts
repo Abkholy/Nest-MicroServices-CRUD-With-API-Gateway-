@@ -27,6 +27,7 @@ export class Citizen extends OMasterFile {
     city: City;
     @ManyToOne(()=>District,{eager:true})
     district: District;
+    @Column({default: ''})
     street: string;
     @Column({type:'simple-enum',enum:[Gender.male,Gender.female]})
     gender: Gender;

@@ -7,6 +7,7 @@ import { UserService } from './user/user.service';
 @Module({
   imports: [
 
+    
     ClientsModule.register([
       {
         name: 'AUTH_SERVICE', transport: Transport.TCP, options: {

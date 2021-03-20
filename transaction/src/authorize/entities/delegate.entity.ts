@@ -19,7 +19,4 @@ export class Delegate extends OMasterFile {
     @Column({ type: 'bigint' })
     expireDate: number;
 
-    @ManyToOne(()=>Authorize,(auth)=>auth.delegated,{onDelete:'CASCADE',onUpdate:'CASCADE'})
-    authorize: Authorize;
-
 }

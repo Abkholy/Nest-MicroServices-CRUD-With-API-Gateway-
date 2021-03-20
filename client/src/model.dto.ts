@@ -26,7 +26,6 @@ export class User {
     @ApiProperty()
     mobile : string;
     @ApiProperty()
-    @Column({default:null})
     macAddress: string;
     @ApiProperty()
     physicalToken : string;
@@ -34,6 +33,10 @@ export class User {
     userType:UserType;
     @ApiProperty()
     isActive: boolean;
+    @ApiProperty()
+    ssn: string;
+    @ApiProperty()
+    motherName: string;
 }
 
 
@@ -84,6 +87,7 @@ export class Citizen  {
     city: City;
     @ApiProperty({type: ()=>District})
     district: District;
+    @ApiProperty()
     street: string;
     @ApiProperty({enum:[Gender.male,Gender.female]})
     gender: Gender;
@@ -116,6 +120,8 @@ export class AuthorizationForm  {
     @ApiProperty( { type: () => AuthorizationType })
     type: AuthorizationType;
     @ApiProperty()
+    title: string;
+    @ApiProperty()
     text: string;
 }
 
@@ -128,13 +134,10 @@ export class Delegate {
     nationality: string;
     @ApiProperty()
     residence: string; 
-
     @ApiProperty()
     issueDate: number;
-
     @ApiProperty()
     expireDate: number;
-
     @ApiProperty({type: ()=>Authorize})
     authorize: Authorize;
 

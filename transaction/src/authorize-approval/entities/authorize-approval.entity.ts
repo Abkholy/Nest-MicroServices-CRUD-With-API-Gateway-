@@ -10,7 +10,7 @@ export class AuthorizeApproval extends OMasterFile{
     @ManyToOne(() => Delegate, { eager: true })
     delegated: Delegate;
 
-    @ManyToOne(() => Authorize,(auth)=>auth.approvals, { eager: true })
+    @ManyToOne(() => Authorize,(auth)=>auth.approvals, { onDelete:'CASCADE',onUpdate:'CASCADE',eager:true })
     authorize: Authorize;
 
     @Column({ type: 'simple-enum', enum: [ApprovalStatus.approved, ApprovalStatus.pending], default: ApprovalStatus.pending })

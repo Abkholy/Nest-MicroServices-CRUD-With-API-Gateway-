@@ -2,6 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { User } from '../../model.dto';
 import { APIURLS } from '../../../shared/Api-urls';
+import { jwtConstants } from '../../auth/constants';
+var CryptoJS = require("crypto-js");
+
 @Injectable()
 export class UserService {
 
@@ -22,6 +25,10 @@ export class UserService {
 
     }
     async save(req: User): Promise<User | PromiseLike<User>> {
+        if (req.password) {
+            var ciphertext = CryptoJS.AES.encrypt(req.password, jwtConstants.secret).toString();
+            req.password = ciphertext
+        }
         return await this.client.send<User>(APIURLS.Auth.User.Add, req).toPromise()
     }
 

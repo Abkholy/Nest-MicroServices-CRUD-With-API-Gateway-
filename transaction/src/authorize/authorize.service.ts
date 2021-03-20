@@ -1,14 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { AuthorizeApproval } from '../authorize-approval/entities/authorize-approval.entity';
 import { Authorize } from './entities/authorize.entity';
+import { Citizen } from './models';
 
 @Injectable()
 export class AuthorizeService {
 
 
   // CRUD Entity for Authorize Created By Override 
-  constructor(@InjectRepository(Authorize) private readonly repo: Repository<Authorize>) {
+  constructor(@InjectRepository(Authorize) private readonly repo: Repository<Authorize>,@Inject('BASIC_DATA_SERVICE') private client: ClientProxy) {
   }
 
 
@@ -45,7 +48,58 @@ export class AuthorizeService {
 
   // save Authorize Created By Override 
   async save(req: Authorize): Promise<Authorize> {
-    return await this.repo.save(req)
+
+
+
+      let citizen =  await this.client.send<Citizen>('Citizen/getBySSN', req.delegator.ssn).toPromise() 
+      if (! citizen )
+      throw new RpcException('Please use a correct SSN')
+
+      req.delegator.name = `${citizen.firstName } ${citizen.secondName } ${citizen.thirdName } ${citizen.fourthName }`
+      req.delegator.residence = citizen.country.name;
+      req.delegator.issueDate = citizen.issueDate;
+      req.delegator.expireDate = citizen.expireDate;
+      
+
+      for await (const d of req.delegated) {
+
+        let citizen =  await this.client.send<Citizen>('Citizen/getBySSN', d.ssn).toPromise() 
+        if (! citizen )
+        throw new RpcException('Please use a correct SSN')
+  
+
+        d.name = `${citizen.firstName } ${citizen.secondName } ${citizen.thirdName } ${citizen.fourthName }`
+        d.residence = citizen.country.name;
+        d.issueDate = citizen.issueDate;
+        d.expireDate = citizen.expireDate;
+      }
+
+      req.valueDate = Date.now()
+    
+    let authorize = await this.repo.save(req);
+
+    if (authorize.type.needApproval === true){
+      authorize.approvals =[];
+
+      for await (const d of authorize.delegated) {
+        let citizen =  await this.client.send<Citizen>('Citizen/getBySSN', d.ssn).toPromise() 
+        if (! citizen )
+        throw new RpcException('Please use a correct SSN')
+  
+        d.name = `${citizen.firstName } ${citizen.secondName } ${citizen.thirdName } ${citizen.fourthName }`
+        d.residence = citizen.country.name;
+        d.issueDate = citizen.issueDate;
+        d.expireDate = citizen.expireDate;
+
+        let  approval = new AuthorizeApproval();
+        approval.delegated = d;
+        approval.valueDate = authorize.valueDate
+        authorize.approvals.push(approval)
+        
+      }
+      await this.repo.save(authorize);
+    }
+    return authorize
   }
 
 

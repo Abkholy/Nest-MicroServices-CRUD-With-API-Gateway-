@@ -7,5 +7,7 @@ export class AuthorizationForm extends OMasterFile {
     @ManyToOne(() => AuthorizationType, { eager: true })
     type: AuthorizationType;
     @Column()
+    title: string;
+    @Column({type:'longtext'})
     text: string;
 }

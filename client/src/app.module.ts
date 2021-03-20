@@ -22,17 +22,17 @@ const  routesModules = [
   CityModule,
   DistrictModule,
   CitizenModule,
-  AuthorizationTypeModule,
     AuthorizationFormModule,
     AuthorizeModule,
     AuthorizeApprovalModule
 ]
 @Module({
   imports: [
-    ...routesModules,
     ConfigModule.forRoot({
       envFilePath: '.env',
+      isGlobal:true
     }),
+    
     MailerModule.forRootAsync({
       useFactory: () => ({
         transport: 'smtps://beautydozapp@gmail.com:B123123b@smtp.gmail.com',
@@ -48,7 +48,8 @@ const  routesModules = [
         },
       }),
     }),
-    
+    ...routesModules,
+
   ],
   controllers: [AppController],
   providers: [AppService],

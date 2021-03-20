@@ -1,8 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { RpcException } from '@nestjs/microservices';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { getRepository, Repository } from 'typeorm';
-import { User } from './entities/user.entity';
+import { Citizen } from '../../models';
+import { User, UserType } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
@@ -10,7 +11,7 @@ export class UserService {
  
  
  // CRUD Entity for User Created By Override 
- constructor()  { 
+ constructor(@Inject('BASIC_DATA_SERVICE') private client: ClientProxy)  { 
   }
  
 
@@ -34,7 +35,10 @@ findByEmail(email: string): User | PromiseLike<User> {
  // findOne User Created By Override 
   findOne(id: string) :Promise<User> {
   return this.repo.findOne(id); }
- 
+
+  async onApplicationBootstrap() {
+    await this.client.connect();
+}
   
  
  // update User Created By Override 
@@ -45,10 +49,31 @@ findByEmail(email: string): User | PromiseLike<User> {
  }
  
  async register(registration: User): Promise<User | PromiseLike<User>> {
-  let existsUser = await this.repo.findOne({ where: [{ email: registration.email }, { mobile: registration.mobile }] })
+  let existsUser = await this.repo.findOne({ where: [{ email: registration.email }, { mobile: registration.mobile },{ssn: registration.ssn}] })
   if (existsUser != null) {
       throw new RpcException('user already exists')
   } else {
+
+    
+      
+      let citizen =  await this.client.send<Citizen>('Citizen/getBySSN', registration.ssn).toPromise()
+      
+      if (! citizen )
+      throw new RpcException('Please use a correct SSN')
+
+      else {
+        if (citizen.motherName.toLowerCase() !== registration.motherName.toLowerCase()){
+          throw new RpcException('Incorrect Data')
+
+        }
+
+        if (citizen.mobile !== registration.mobile){
+          throw new RpcException('Incorrect Data')
+        }
+
+      }
+
+    
     return await this.repo.save(registration);
   }
 }

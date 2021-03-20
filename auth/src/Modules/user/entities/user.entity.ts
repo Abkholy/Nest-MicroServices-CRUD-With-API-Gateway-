@@ -23,7 +23,10 @@ export class User extends OMasterFile {
     physicalToken : string;
     @Column({type:'simple-enum',enum:[UserType.admin,UserType.citizen,UserType.delegationEmployee,UserType.securityEmployee],default:UserType.citizen})
     userType:UserType
-
     @Column({default:true})
     isActive: boolean;
+    @Column({nullable: true})
+    ssn: string;
+    @Column({nullable: true})
+    motherName: string;
 }
