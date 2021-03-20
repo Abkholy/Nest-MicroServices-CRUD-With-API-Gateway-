@@ -55,7 +55,7 @@ findByEmail(email: string): User | PromiseLike<User> {
   } else {
 
     
-      
+    if (registration.userType === 'citizen'){
       let citizen =  await this.client.send<Citizen>('Citizen/getBySSN', registration.ssn).toPromise()
       
       if (! citizen )
@@ -72,6 +72,9 @@ findByEmail(email: string): User | PromiseLike<User> {
         }
 
       }
+    }
+      
+    
 
     
     return await this.repo.save(registration);
